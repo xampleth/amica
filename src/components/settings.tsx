@@ -177,6 +177,7 @@ export const Settings = ({
   const [reasoningEngineUrl,setReasoningEngineUrl] = useState(config("reasoning_engine_url") );
 
   const [externalApiEnabled,setExternalApiEnabled] = useState<boolean>(config("external_api_enabled") === 'true' ? true : false);
+  const [jwtOutdated,setJwtOutdated] = useState<boolean>(config("jwt_outdated") === 'true' ? true : false);
 
   const [name, setName] = useState(config("name"));
   const [systemPrompt, setSystemPrompt] = useState(config("system_prompt"));
@@ -264,6 +265,8 @@ export const Settings = ({
   useEffect(() => {
     const timeOutId = setTimeout(() => {
       if (settingsUpdated) {
+        setJwtOutdated(true)
+        updateConfig("jwt_outdated", "true");
         setShowNotification(true);
         setTimeout(() => {
           setShowNotification(false);
@@ -745,7 +748,9 @@ export const Settings = ({
     case 'external_api':
       return <ExternalAPIPage
         externalApiEnabled={externalApiEnabled}
+        jwtOutdated={jwtOutdated}
         setExternalApiEnabled={setExternalApiEnabled}
+        setJwtOutdated={setJwtOutdated}
         setSettingsUpdated={setSettingsUpdated}
         />
 

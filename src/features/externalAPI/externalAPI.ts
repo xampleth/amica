@@ -1,11 +1,11 @@
 import { config, defaults, prefixed } from "@/utils/config";
-import isDev from "@/utils/isDev";
 import {
   MAX_STORAGE_TOKENS,
   TimestampedPrompt,
 } from "../amicaLife/eventHandler";
 import { Message } from "../chat/messages";
 
+export const issueJWT = `/api/getConfigJWT`;
 export const configUrl = new URL(
   `${process.env.NEXT_PUBLIC_DEVELOPMENT_BASE_URL}/api/dataHandler`,
 );
@@ -31,32 +31,17 @@ export const chatLogsUrl = new URL(
 );
 chatLogsUrl.searchParams.append("type", "chatLogs");
 
-// Cached server config
-export let serverConfig: Record<string, string> = {};
-
-export async function fetcher(method: string, url: URL, data?: any) {
-  let response: any;
+export async function fetcher(method: string, url: URL | string, data?: any) {
   switch (method) {
     case "POST":
       try {
-        response = await fetch(url, {
+        await fetch(url, {
           method: method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         });
       } catch (error) {
         console.error("Failed to POST server config: ", error);
-      }
-      break;
-
-    case "GET":
-      try {
-        response = await fetch(url);
-        if (response.ok) {
-          serverConfig = await response.json();
-        }
-      } catch (error) {
-        console.error("Failed to fetch server config:", error);
       }
       break;
 
@@ -69,10 +54,6 @@ export async function handleConfig(
   type: string,
   data?: Record<string, string>,
 ) {
-  if (!isDev) {
-    return;
-  }
-
   switch (type) {
     // Call this function at the beginning of your application to load the server config and sync to localStorage if needed.
     case "init":
@@ -91,18 +72,23 @@ export async function handleConfig(
       }
 
       // Sync update to server config
-      await fetcher("POST", configUrl, localStorageData);
+      const response = await fetch(issueJWT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: localStorageData }),
+      });
 
-      break;
-    case "fetch":
-      // Sync update to server config cache
-      await fetcher("GET", configUrl);
+      let token: string = "";
+      if (response.ok) {
+        const json = await response.json();
+        if (json.token) {
+          token = json.token;
+        }
+      }
 
-      break;
-
+      return token;
     case "update":
       await fetcher("POST", configUrl, data);
-
       break;
 
     default:
@@ -111,7 +97,7 @@ export async function handleConfig(
 }
 
 export async function handleUserInput(message: string) {
-  if (!isDev || config("external_api_enabled") !== "true") {
+  if (config("external_api_enabled") !== "true") {
     return;
   }
 
@@ -126,7 +112,7 @@ export async function handleUserInput(message: string) {
 }
 
 export async function handleChatLogs(messages: Message[]) {
-  if (!isDev || config("external_api_enabled") !== "true") {
+  if (config("external_api_enabled") !== "true") {
     return;
   }
 
@@ -140,7 +126,7 @@ export async function handleChatLogs(messages: Message[]) {
 export async function handleSubconscious(
   timestampedPrompt: TimestampedPrompt,
 ): Promise<any> {
-  if (!isDev || config("external_api_enabled") !== "true") {
+  if (config("external_api_enabled") !== "true") {
     return;
   }
 

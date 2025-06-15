@@ -11,7 +11,6 @@ import { functionCalling } from "@/features/functionCalling/functionCalling";
 import { AmicaLife } from "./amicaLife";
 import { Viewer } from "../vrmViewer/viewer";
 import { config } from "@/utils/config";
-import isDev from "@/utils/isDev";
 import { handleSubconscious } from "../externalAPI/externalAPI";
 
 export const idleEvents = [
@@ -201,7 +200,7 @@ export async function handleSubconsciousEvent(
     };
 
     // External API feature
-    if (isDev && config("external_api_enabled") === "true") {
+    if (config("external_api_enabled") === "true") {
       try {
         storedSubconcious = await handleSubconscious(timestampedPrompt);
       } catch (error) {

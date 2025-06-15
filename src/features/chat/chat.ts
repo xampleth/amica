@@ -38,7 +38,6 @@ import { config, updateConfig } from "@/utils/config";
 import { cleanTalk } from "@/utils/cleanTalk";
 import { processResponse } from "@/utils/processResponse";
 import { wait } from "@/utils/wait";
-import isDev from '@/utils/isDev';
 
 import { isCharacterIdle, characterIdleTime, resetIdleTimer } from "@/utils/isIdle";
 import { getOpenRouterChatResponseStream } from './openRouterChat';
@@ -412,7 +411,7 @@ export class Chat {
   }
 
   public initSSE() {
-    if (!isDev || config("external_api_enabled") !== "true") {
+    if (config("external_api_enabled") !== "true") {
       return;
     }  
     // Close existing SSE connection if it exists

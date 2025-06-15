@@ -1,4 +1,5 @@
-import { handleConfig, serverConfig } from "@/features/externalAPI/externalAPI";
+import { handleConfig } from "@/features/externalAPI/externalAPI";
+import { readStore } from "@/features/externalAPI/memoryStore";
 
 export const defaults = {
   // AllTalk TTS specific settings
@@ -90,6 +91,7 @@ export const defaults = {
   reasoning_engine_enabled: process.env.NEXT_PUBLIC_REASONING_ENGINE_ENABLED ?? 'false',
   reasoning_engine_url: process.env.NEXT_PUBLIC_REASONING_ENGINE_URL ?? 'https://i-love-amica.com:3000/reasoning/v1/chat/completions',
   external_api_enabled: process.env.NEXT_PUBLIC_EXTERNAL_API_ENABLED ?? 'false',
+  jwt_outdated: '',
   x_api_key: process.env.NEXT_PUBLIC_X_API_KEY ?? '',
   x_api_secret: process.env.NEXT_PUBLIC_X_API_SECRET ?? '',
   x_access_token: process.env.NEXT_PUBLIC_X_ACCESS_TOKEN ?? '',
@@ -128,13 +130,11 @@ export function prefixed(key: string) {
 // Ensure syncLocalStorage runs only on the server side and once
 if (typeof window !== "undefined") {
   (async () => {
-    await handleConfig("init");
+    const token = await handleConfig("init");
+    localStorage.setItem(prefixed("jwt_token"), token!);
+    localStorage.setItem(prefixed("jwt_outdated"), 'false');
   })();
-} else {
-  (async () => {
-    await handleConfig("fetch");
-  })();
-}
+} 
 
 export function config(key: string): string {
   if (typeof localStorage !== "undefined" && localStorage.hasOwnProperty(prefixed(key))) {
@@ -142,6 +142,7 @@ export function config(key: string): string {
   }
 
   // Fallback to serverConfig if localStorage is unavailable or missing
+  const serverConfig = readStore("config");
   if (serverConfig && serverConfig.hasOwnProperty(key)) {
     return serverConfig[key];
   }

@@ -431,8 +431,8 @@ export class Model {
     this.emoteController?.update(delta);
     this.mixer?.update(delta);
     this.vrm?.update(delta);
-    if (config("animation_procedural") === "true") {
-      this.proceduralAnimation?.update(delta);
-    }
+    // if (config("animation_procedural") === "true") {
+    //   this.proceduralAnimation?.update(delta);
+    // }
   }
 }

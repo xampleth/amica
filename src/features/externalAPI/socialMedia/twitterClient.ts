@@ -1,4 +1,3 @@
-import { config } from '@/utils/config';
 import { TwitterApi, TwitterApiReadWrite, TwitterApiReadOnly, TweetV2PostTweetResult } from 'twitter-api-v2';
 
 class TwitterClient {
